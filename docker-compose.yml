@@ -1,0 +1,19 @@
+services:
+  google-workspace-mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: google-workspace-mcp
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      MCP_TRANSPORT: http
+      MCP_HOST: 0.0.0.0
+      MCP_PORT: 8089
+      MCP_STATELESS: "true"
+      XDG_CONFIG_HOME: /config
+    ports:
+      - "8089:8089"
+    volumes:
+      - ./docker-data/config:/config

@@ -173,7 +173,7 @@ async function initializeGoogleClient() {
 }
 
 const server = new FastMCP({
-  name: 'Google Docs MCP Server',
+  name: 'Google Workspace MCP Server',
   version: '1.0.0',
 });
 

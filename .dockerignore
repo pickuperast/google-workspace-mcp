@@ -1,0 +1,10 @@
+.git
+.github
+.vscode
+node_modules
+dist
+coverage
+docker-data
+*.log
+.DS_Store
+google docs mcp.mp4

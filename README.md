@@ -1,8 +1,10 @@
-# Google Docs, Sheets & Drive MCP Server
+# Google Workspace MCP Server
+
+Public repository: https://github.com/pickuperast/google-workspace-mcp
 
 ![Demo Animation](assets/google.docs.mcp.1.gif)
 
-Connect Claude Desktop, Cursor, or any MCP client to your Google Docs, Google Sheets, and Google Drive.
+Connect Claude Desktop, Cursor, or any MCP client to your Google Docs, Google Sheets, Google Drive, and Gmail.
 
 ---
 
@@ -24,10 +26,10 @@ Connect Claude Desktop, Cursor, or any MCP client to your Google Docs, Google Sh
 ```bash
 GOOGLE_CLIENT_ID="your-client-id" \
 GOOGLE_CLIENT_SECRET="your-client-secret" \
-npx -y @a-bonus/google-docs-mcp auth
+npx -y @pickuperast/google-workspace-mcp auth
 ```
 
-This opens your browser for Google authorization. After you approve, the refresh token is saved to `~/.config/google-docs-mcp/token.json`.
+This opens your browser for Google authorization. After you approve, the refresh token is saved to `~/.config/google-workspace-mcp/token.json`.
 
 ### 3. Add to Your MCP Client
 
@@ -38,7 +40,7 @@ This opens your browser for Google authorization. After you approve, the refresh
   "mcpServers": {
     "google-docs": {
       "command": "npx",
-      "args": ["-y", "@a-bonus/google-docs-mcp"],
+      "args": ["-y", "@pickuperast/google-workspace-mcp"],
       "env": {
         "GOOGLE_CLIENT_ID": "your-client-id",
         "GOOGLE_CLIENT_SECRET": "your-client-secret"
@@ -49,6 +51,56 @@ This opens your browser for Google authorization. After you approve, the refresh
 ```
 
 The server starts automatically when your MCP client needs it.
+
+---
+
+## Docker On Windows Startup
+
+For a long-running Windows deployment, the server can run in Docker over HTTP instead of `stdio`.
+
+If your MCP client supports `stdio` servers directly, that is usually the simpler setup: the client launches the server only when needed, so no always-on service is required.
+
+1. Authorize once on the host machine so `token.json` exists:
+
+```bash
+GOOGLE_CLIENT_ID="your-client-id" \
+GOOGLE_CLIENT_SECRET="your-client-secret" \
+npx -y @pickuperast/google-workspace-mcp auth
+```
+
+2. Put your OAuth env vars in `.env`.
+3. Deploy with:
+
+```powershell
+.\scripts\deploy-windows.ps1
+```
+
+This script:
+
+- copies the existing token into `./docker-data/config/google-workspace-mcp/token.json`
+- builds the image
+- starts the container in stateless HTTP mode
+- registers a Windows Scheduled Task that runs at logon
+- verifies `http://127.0.0.1:8089/ready`
+
+`docker-compose.yml` uses `restart: unless-stopped`, so the container starts again whenever Docker Desktop starts. To have it come back after Windows login, enable Docker Desktop's "Start Docker Desktop when you log in" setting.
+
+The startup task runs [scripts/start-container.ps1](/G:/Documents/GitHub/google-workspace-mcp/scripts/start-container.ps1), which waits for Docker to become available and then runs `docker compose up -d`. You can skip task registration with:
+
+```powershell
+.\scripts\deploy-windows.ps1 -SkipStartupTask
+```
+
+The MCP endpoint is exposed at `http://127.0.0.1:8089/mcp` with SSE fallback at `http://127.0.0.1:8089/sse`.
+
+The container reads credentials from `.env` through `docker-compose.yml`:
+
+```yaml
+env_file:
+  - .env
+```
+
+That means the caller does not need to pass `GOOGLE_CLIENT_ID` or `GOOGLE_CLIENT_SECRET` when connecting to the HTTP MCP server. The env vars are injected into the container at startup.
 
 ---
 
@@ -136,6 +188,18 @@ The server starts automatically when your MCP client needs it.
 | `renameFile`         | Rename a file                               |
 | `deleteFile`         | Move to trash or permanently delete         |
 
+### Gmail
+
+| Tool               | Description                                                  |
+| ------------------ | ------------------------------------------------------------ |
+| `listGmailLabels`  | List system and custom Gmail labels                          |
+| `listEmails`       | Search/list Gmail messages with metadata and snippets        |
+| `getEmail`         | Read a Gmail message with headers, bodies, and attachments   |
+| `createGmailDraft` | Create a Gmail draft, optionally in an existing thread       |
+| `updateGmailDraft` | Replace the contents of an existing Gmail draft by ID        |
+| `sendGmailDraft`   | Send an existing Gmail draft by ID                           |
+| `sendEmail`        | Send a Gmail message, optionally in an existing thread       |
+
 ---
 
 ## Usage Examples
@@ -207,7 +271,7 @@ For Google Workspace with domain-wide delegation:
   "mcpServers": {
     "google-docs": {
       "command": "npx",
-      "args": ["-y", "@a-bonus/google-docs-mcp"],
+      "args": ["-y", "@pickuperast/google-workspace-mcp"],
       "env": {
         "SERVICE_ACCOUNT_PATH": "/path/to/service-account-key.json",
         "GOOGLE_IMPERSONATE_USER": "user@yourdomain.com"
@@ -219,7 +283,7 @@ For Google Workspace with domain-wide delegation:
 
 ### Token Storage
 
-OAuth refresh tokens are stored in `~/.config/google-docs-mcp/token.json` (respects `XDG_CONFIG_HOME`). To re-authorize, run the `auth` command again or delete the token file.
+OAuth refresh tokens are stored in `~/.config/google-workspace-mcp/token.json` (respects `XDG_CONFIG_HOME`). To re-authorize, run the `auth` command again or delete the token file.
 
 ### Multiple Google Accounts
 
@@ -234,7 +298,7 @@ Set `GOOGLE_MCP_PROFILE` to store tokens in a profile-specific subdirectory. Thi
   "mcpServers": {
     "google-docs": {
       "command": "npx",
-      "args": ["-y", "@a-bonus/google-docs-mcp"],
+      "args": ["-y", "@pickuperast/google-workspace-mcp"],
       "env": {
         "GOOGLE_CLIENT_ID": "...",
         "GOOGLE_CLIENT_SECRET": "...",
@@ -248,7 +312,7 @@ Set `GOOGLE_MCP_PROFILE` to store tokens in a profile-specific subdirectory. Thi
 Tokens are stored per profile:
 
 ```
-~/.config/google-docs-mcp/
+~/.config/google-workspace-mcp/
 ├── token.json              # default (no profile)
 ├── work/token.json         # GOOGLE_MCP_PROFILE=work
 ├── personal/token.json     # GOOGLE_MCP_PROFILE=personal
@@ -270,12 +334,12 @@ Without `GOOGLE_MCP_PROFILE`, behavior is unchanged.
 
 - **Server won't start:**
   - Verify `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are set in the `env` block of your MCP config.
-  - Try running manually: `npx @a-bonus/google-docs-mcp` and check stderr for errors.
+  - Try running manually: `npx @pickuperast/google-workspace-mcp` and check stderr for errors.
 - **Authorization errors:**
   - Ensure Docs, Sheets, and Drive APIs are enabled in Google Cloud Console.
   - Confirm your email is listed as a Test User on the OAuth consent screen.
-  - Re-authorize: `npx @a-bonus/google-docs-mcp auth`
-  - Delete `~/.config/google-docs-mcp/token.json` and re-authorize if upgrading.
+  - Re-authorize: `npx @pickuperast/google-workspace-mcp auth`
+  - Delete `~/.config/google-workspace-mcp/token.json` and re-authorize if upgrading.
 - **Tab errors:**
   - Use `listDocumentTabs` to see available tab IDs.
   - Omit `tabId` for single-tab documents.

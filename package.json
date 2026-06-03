@@ -1,9 +1,9 @@
 {
-  "name": "@a-bonus/google-docs-mcp",
+  "name": "@pickuperast/google-workspace-mcp",
   "version": "1.3.1",
   "type": "module",
   "bin": {
-    "google-docs-mcp": "dist/index.js"
+    "google-workspace-mcp": "dist/index.js"
   },
   "files": [
     "dist/",
@@ -27,9 +27,9 @@
     "google-sheets",
     "google-drive"
   ],
-  "author": "a-bonus",
-  "license": "ISC",
-  "description": "MCP server for Google Docs, Sheets, and Drive",
+  "author": "pickuperast",
+  "license": "MIT",
+  "description": "MCP server for Google Docs, Sheets, Drive, and Gmail",
   "dependencies": {
     "fastmcp": "^3.24.0",
     "google-auth-library": "^10.5.0",

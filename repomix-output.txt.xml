@@ -171,19 +171,19 @@ This server needs permission to talk to Google APIs on your behalf. You'll creat
 
 1.  **Clone the Repository:** Open your terminal/command prompt and run:
     ```bash
-    git clone https://github.com/a-bonus/google-docs-mcp.git mcp-googledocs-server
+    git clone https://github.com/pickuperast/google-workspace-mcp.git google-workspace-mcp
     ```
 2.  **Navigate into Directory:**
     ```bash
-    cd mcp-googledocs-server
+    cd google-workspace-mcp
     ```
-3.  **Place Credentials:** Move or copy the `credentials.json` file you downloaded and renamed (from Step 1.6) directly into this `mcp-googledocs-server` folder.
+3.  **Place Credentials:** Move or copy the `credentials.json` file you downloaded and renamed (from Step 1.6) directly into this `google-workspace-mcp` folder.
 
 ### Step 3: Install Dependencies
 
 Your server needs some helper libraries specified in the `package.json` file.
 
-1.  In your terminal (make sure you are inside the `mcp-googledocs-server` directory), run:
+1.  In your terminal (make sure you are inside the `google-workspace-mcp` directory), run:
     ```bash
     npm install
     ```
@@ -225,7 +225,7 @@ Now you need to run the server once manually to grant it permission to access yo
     - "Authentication successful!"
     - "Token stored to .../token.json"
     - It will then finish starting and likely print "Awaiting MCP client connection via stdio..." or similar, and then exit (or you can press `Ctrl+C` to stop it).
-8.  ✅ **Check:** You should now see a new file named `token.json` in your `mcp-googledocs-server` folder.
+8.  ✅ **Check:** You should now see a new file named `token.json` in your `google-workspace-mcp` folder.
 9.  ⚠️ **SECURITY WARNING:** This `token.json` file contains the key that allows the server to access your Google account _without_ asking again. Protect it like a password. **Do not commit it to GitHub.** The included `.gitignore` file should prevent this automatically.
 
 ### Step 6: Configure Claude Desktop (Optional)
@@ -233,9 +233,9 @@ Now you need to run the server once manually to grant it permission to access yo
 If you want to use this server with Claude Desktop, you need to tell Claude how to run it.
 
 1.  **Find Your Absolute Path:** You need the full path to the server code.
-    - In your terminal, make sure you are still inside the `mcp-googledocs-server` directory.
+    - In your terminal, make sure you are still inside the `google-workspace-mcp` directory.
     - Run the `pwd` command (on macOS/Linux) or `cd` (on Windows, just displays the path).
-    - Copy the full path (e.g., `/Users/yourname/projects/mcp-googledocs-server` or `C:\Users\yourname\projects\mcp-googledocs-server`).
+    - Copy the full path (e.g., `/Users/yourname/projects/google-workspace-mcp` or `C:\Users\yourname\projects\google-workspace-mcp`).
 2.  **Locate `mcp_config.json`:** Find Claude's configuration file:
     - **macOS:** `~/Library/Application Support/Claude/mcp_config.json` (You might need to use Finder's "Go" -> "Go to Folder..." menu and paste `~/Library/Application Support/Claude/`)
     - **Windows:** `%APPDATA%\Claude\mcp_config.json` (Paste `%APPDATA%\Claude` into File Explorer's address bar)
@@ -246,10 +246,10 @@ If you want to use this server with Claude Desktop, you need to tell Claude how 
     ```json
     {
       "mcpServers": {
-        "google-docs-mcp": {
+        "google-workspace-mcp": {
           "command": "node",
           "args": [
-            "/PATH/TO/YOUR/CLONED/REPO/mcp-googledocs-server/dist/server.js"
+            "/PATH/TO/YOUR/CLONED/REPO/google-workspace-mcp/dist/server.js"
           ],
           "env": {}
         }
@@ -271,9 +271,9 @@ If you want to use this server with Claude Desktop, you need to tell Claude how 
 
 Once configured, you should be able to use the tools in your chats with Claude:
 
-- "Use the `google-docs-mcp` server to read the document with ID `YOUR_GOOGLE_DOC_ID`."
+- "Use the `google-workspace-mcp` server to read the document with ID `YOUR_GOOGLE_DOC_ID`."
 - "Can you get the content of Google Doc `YOUR_GOOGLE_DOC_ID`?"
-- "Append 'This was added by Claude!' to document `YOUR_GOOGLE_DOC_ID` using the `google-docs-mcp` tool."
+- "Append 'This was added by Claude!' to document `YOUR_GOOGLE_DOC_ID` using the `google-workspace-mcp` tool."
 
 Remember to replace `YOUR_GOOGLE_DOC_ID` with the actual ID from a Google Doc's URL (the long string between `/d/` and `/edit`).
 
@@ -293,7 +293,7 @@ Claude will automatically launch your server in the background when needed using
 - **Claude shows "Failed" or "Could not attach":**
   - Double-check the absolute path in `mcp_config.json`.
   - Ensure you ran `npm run build` successfully and the `dist` folder exists.
-  - Try running the command from `mcp_config.json` manually in your terminal: `node /PATH/TO/YOUR/CLONED/REPO/mcp-googledocs-server/dist/server.js`. Look for any errors printed.
+  - Try running the command from `mcp_config.json` manually in your terminal: `node /PATH/TO/YOUR/CLONED/REPO/google-workspace-mcp/dist/server.js`. Look for any errors printed.
   - Check the Claude Desktop logs (see the official MCP debugging guide).
   - Make sure all `console.log` status messages in the server code were changed to `console.error`.
 - **Google Authorization Errors:**
@@ -967,7 +967,7 @@ process.on('unhandledRejection', (reason, promise) => {
 });
 
 const server = new FastMCP({
-  name: 'Ultimate Google Docs MCP Server',
+  name: 'Ultimate Google Workspace MCP Server',
   version: '1.0.0'
 });
 
@@ -2260,7 +2260,7 @@ try {
 async function startServer() {
 try {
 await initializeGoogleClient(); // Authorize BEFORE starting listeners
-console.error("Starting Ultimate Google Docs MCP server...");
+console.error("Starting Ultimate Google Workspace MCP server...");
 
       // Using stdio as before
       const configToUse = {
@@ -3217,7 +3217,7 @@ return { authClient, googleDocs };
 }
 
 const server = new FastMCP({
-name: 'Ultimate Google Docs MCP Server',
+name: 'Ultimate Google Workspace MCP Server',
 version: '2.0.0', // Version bump!
 description: 'Provides advanced tools for reading, editing, formatting, and managing Google Documents.'
 });
@@ -3661,7 +3661,7 @@ throw new NotImplementedError("Finding elements by complex criteria is not yet i
 async function startServer() {
 try {
 await initializeGoogleClient(); // Authorize BEFORE starting listeners
-console.error("Starting Ultimate Google Docs MCP server...");
+console.error("Starting Ultimate Google Workspace MCP server...");
 
       // Using stdio as before
       const configToUse = {
@@ -3724,7 +3724,7 @@ Test edge cases (text not found, invalid indices, invalid hex colors).
 Test the tools that rely on helpers (e.g., applyParagraphStyle which uses getParagraphRange and findTextRange).
 Expect the unimplemented tools to return the "Not Implemented" error.
 Monitor the terminal where Claude Desktop runs the server (or run it manually) for error messages (console.error logs).
-You now have the code structure and implementation examples for a significantly more powerful Google Docs MCP server. Remember that the unimplemented features and complex helpers will require further development effort. Good luck!
+You now have the code structure and implementation examples for a significantly more powerful Google Workspace MCP server. Remember that the unimplemented features and complex helpers will require further development effort. Good luck!
 
 ================
 File: LICENSE
@@ -3741,7 +3741,7 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 File: package.json
 ================
 {
-  "name": "mcp-googledocs-server",
+  "name": "google-workspace-mcp",
   "version": "1.0.0",
   "type": "module",
   "main": "index.js",
@@ -3870,19 +3870,19 @@ This server needs permission to talk to Google APIs on your behalf. You'll creat
 
 1.  **Clone the Repository:** Open your terminal/command prompt and run:
     ```bash
-    git clone https://github.com/a-bonus/google-docs-mcp.git mcp-googledocs-server
+    git clone https://github.com/pickuperast/google-workspace-mcp.git google-workspace-mcp
     ```
 2.  **Navigate into Directory:**
     ```bash
-    cd mcp-googledocs-server
+    cd google-workspace-mcp
     ```
-3.  **Place Credentials:** Move or copy the `credentials.json` file you downloaded and renamed (from Step 1.6) directly into this `mcp-googledocs-server` folder.
+3.  **Place Credentials:** Move or copy the `credentials.json` file you downloaded and renamed (from Step 1.6) directly into this `google-workspace-mcp` folder.
 
 ### Step 3: Install Dependencies
 
 Your server needs some helper libraries specified in the `package.json` file.
 
-1.  In your terminal (make sure you are inside the `mcp-googledocs-server` directory), run:
+1.  In your terminal (make sure you are inside the `google-workspace-mcp` directory), run:
     ```bash
     npm install
     ```
@@ -3924,7 +3924,7 @@ Now you need to run the server once manually to grant it permission to access yo
     - "Authentication successful!"
     - "Token stored to .../token.json"
     - It will then finish starting and likely print "Awaiting MCP client connection via stdio..." or similar, and then exit (or you can press `Ctrl+C` to stop it).
-8.  ✅ **Check:** You should now see a new file named `token.json` in your `mcp-googledocs-server` folder.
+8.  ✅ **Check:** You should now see a new file named `token.json` in your `google-workspace-mcp` folder.
 9.  ⚠️ **SECURITY WARNING:** This `token.json` file contains the key that allows the server to access your Google account _without_ asking again. Protect it like a password. **Do not commit it to GitHub.** The included `.gitignore` file should prevent this automatically.
 
 ### Step 6: Configure Claude Desktop (Optional)
@@ -3932,9 +3932,9 @@ Now you need to run the server once manually to grant it permission to access yo
 If you want to use this server with Claude Desktop, you need to tell Claude how to run it.
 
 1.  **Find Your Absolute Path:** You need the full path to the server code.
-    - In your terminal, make sure you are still inside the `mcp-googledocs-server` directory.
+    - In your terminal, make sure you are still inside the `google-workspace-mcp` directory.
     - Run the `pwd` command (on macOS/Linux) or `cd` (on Windows, just displays the path).
-    - Copy the full path (e.g., `/Users/yourname/projects/mcp-googledocs-server` or `C:\Users\yourname\projects\mcp-googledocs-server`).
+    - Copy the full path (e.g., `/Users/yourname/projects/google-workspace-mcp` or `C:\Users\yourname\projects\google-workspace-mcp`).
 2.  **Locate `mcp_config.json`:** Find Claude's configuration file:
     - **macOS:** `~/Library/Application Support/Claude/mcp_config.json` (You might need to use Finder's "Go" -> "Go to Folder..." menu and paste `~/Library/Application Support/Claude/`)
     - **Windows:** `%APPDATA%\Claude\mcp_config.json` (Paste `%APPDATA%\Claude` into File Explorer's address bar)
@@ -3945,10 +3945,10 @@ If you want to use this server with Claude Desktop, you need to tell Claude how 
     ```json
     {
       "mcpServers": {
-        "google-docs-mcp": {
+        "google-workspace-mcp": {
           "command": "node",
           "args": [
-            "/PATH/TO/YOUR/CLONED/REPO/mcp-googledocs-server/dist/server.js"
+            "/PATH/TO/YOUR/CLONED/REPO/google-workspace-mcp/dist/server.js"
           ],
           "env": {}
         }
@@ -3970,9 +3970,9 @@ If you want to use this server with Claude Desktop, you need to tell Claude how 
 
 Once configured, you should be able to use the tools in your chats with Claude:
 
-- "Use the `google-docs-mcp` server to read the document with ID `YOUR_GOOGLE_DOC_ID`."
+- "Use the `google-workspace-mcp` server to read the document with ID `YOUR_GOOGLE_DOC_ID`."
 - "Can you get the content of Google Doc `YOUR_GOOGLE_DOC_ID`?"
-- "Append 'This was added by Claude!' to document `YOUR_GOOGLE_DOC_ID` using the `google-docs-mcp` tool."
+- "Append 'This was added by Claude!' to document `YOUR_GOOGLE_DOC_ID` using the `google-workspace-mcp` tool."
 
 ### Advanced Usage Examples:
 - **Text Styling**: "Use `applyTextStyle` to make the text 'Important Section' bold and red (#FF0000) in document `YOUR_GOOGLE_DOC_ID`."
@@ -3998,7 +3998,7 @@ Claude will automatically launch your server in the background when needed using
 - **Claude shows "Failed" or "Could not attach":**
   - Double-check the absolute path in `mcp_config.json`.
   - Ensure you ran `npm run build` successfully and the `dist` folder exists.
-  - Try running the command from `mcp_config.json` manually in your terminal: `node /PATH/TO/YOUR/CLONED/REPO/mcp-googledocs-server/dist/server.js`. Look for any errors printed.
+  - Try running the command from `mcp_config.json` manually in your terminal: `node /PATH/TO/YOUR/CLONED/REPO/google-workspace-mcp/dist/server.js`. Look for any errors printed.
   - Check the Claude Desktop logs (see the official MCP debugging guide).
   - Make sure all `console.log` status messages in the server code were changed to `console.error`.
 - **Google Authorization Errors:**
@@ -4360,7 +4360,7 @@ Once configured, you can use the MCP server with AI assistants in VS Code:
 
 1. **Re-authorize** - Delete `token.json` and run the server manually once:
    ```bash
-   cd /path/to/your/google-docs-mcp
+   cd /path/to/your/google-workspace-mcp
    node dist/server.js
    ```
 2. **Follow the authorization flow** again

@@ -13,8 +13,8 @@ Thanks for your interest in contributing! This guide covers how to set up the pr
 ### Clone and Build
 
 ```bash
-git clone https://github.com/a-bonus/google-docs-mcp.git
-cd google-docs-mcp
+git clone https://github.com/pickuperast/google-workspace-mcp.git
+cd google-workspace-mcp
 npm install
 npm run build
 ```
@@ -37,7 +37,7 @@ GOOGLE_CLIENT_SECRET="your-client-secret" \
 npm start auth
 ```
 
-Both options save the refresh token to `~/.config/google-docs-mcp/token.json`.
+Both options save the refresh token to `~/.config/google-workspace-mcp/token.json`.
 
 ### Register Your Local Build
 
@@ -48,7 +48,7 @@ Point your MCP client at the local build for testing:
   "mcpServers": {
     "google-docs": {
       "command": "node",
-      "args": ["/absolute/path/to/mcp-googledocs-server/dist/index.js"]
+      "args": ["/absolute/path/to/google-workspace-mcp/dist/index.js"]
     }
   }
 }
@@ -110,7 +110,7 @@ The auth module (`src/auth.ts`) resolves credentials in this order:
 2. `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET` env vars -- OAuth (for `npx` consumers)
 3. `credentials.json` in the project root -- OAuth (for local dev)
 
-Tokens are persisted to `~/.config/google-docs-mcp/token.json` (respects `XDG_CONFIG_HOME`).
+Tokens are persisted to `~/.config/google-workspace-mcp/token.json` (respects `XDG_CONFIG_HOME`).
 
 ---
 
@@ -162,4 +162,4 @@ Releases are automated via GitHub Actions. To publish a new version:
 3. Tag the commit: `git tag v1.2.3 && git push origin v1.2.3`
 4. The [release workflow](.github/workflows/release.yml) will run CI checks, publish to npm, and create a GitHub Release
 
-The npm package is published as `@a-bonus/google-docs-mcp`.
+The npm package is published as `@pickuperast/google-workspace-mcp`.

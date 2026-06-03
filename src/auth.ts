@@ -30,7 +30,7 @@ const CREDENTIALS_PATH = path.join(projectRootDir, 'credentials.json');
 function getConfigDir(): string {
   const xdg = process.env.XDG_CONFIG_HOME;
   const base = xdg || path.join(os.homedir(), '.config');
-  const baseDir = path.join(base, 'google-docs-mcp');
+  const baseDir = path.join(base, 'google-workspace-mcp');
   const profile = process.env.GOOGLE_MCP_PROFILE;
   return profile ? path.join(baseDir, profile) : baseDir;
 }
@@ -48,6 +48,8 @@ const SCOPES = [
   'https://www.googleapis.com/auth/drive',
   'https://www.googleapis.com/auth/spreadsheets',
   'https://www.googleapis.com/auth/script.external_request',
+  'https://www.googleapis.com/auth/gmail.modify',
+  'https://www.googleapis.com/auth/gmail.send',
 ];
 
 // ---------------------------------------------------------------------------
@@ -151,6 +153,39 @@ async function loadSavedCredentialsIfExist(): Promise<OAuth2Client | null> {
   }
 }
 
+function isInvalidGrantError(error: unknown): boolean {
+  const candidate = error as {
+    message?: string;
+    response?: { data?: { error?: string; error_description?: string } };
+  };
+  const description = candidate?.response?.data?.error_description;
+  return (
+    candidate?.message === 'invalid_grant' ||
+    candidate?.response?.data?.error === 'invalid_grant' ||
+    description === 'Token has been expired or revoked.'
+  );
+}
+
+function buildExpiredTokenMessage(tokenPath: string): string {
+  return (
+    `Saved Google OAuth token at ${tokenPath} is expired, revoked, or no longer valid for the current OAuth client. ` +
+    'Run the `auth` command on the host machine to mint a fresh token. ' +
+    'If you are using Docker, sync the refreshed token into `docker-data/config/google-workspace-mcp/token.json` and restart the container.'
+  );
+}
+
+async function validateSavedCredentials(client: OAuth2Client): Promise<OAuth2Client> {
+  try {
+    await client.getAccessToken();
+    return client;
+  } catch (error) {
+    if (isInvalidGrantError(error)) {
+      throw new Error(buildExpiredTokenMessage(getTokenPath()));
+    }
+    throw error;
+  }
+}
+
 async function saveCredentials(client: OAuth2Client): Promise<void> {
   const { client_secret, client_id } = await loadClientSecrets();
   const configDir = getConfigDir();
@@ -236,7 +271,7 @@ async function authenticate(): Promise<OAuth2Client> {
  *
  * Resolution order:
  *   1. SERVICE_ACCOUNT_PATH env var -> service account JWT
- *   2. Saved token in ~/.config/google-docs-mcp/token.json -> OAuth2Client
+ *   2. Saved token in ~/.config/google-workspace-mcp/token.json -> OAuth2Client
  *   3. Interactive browser OAuth flow -> OAuth2Client (saves token for next time)
  */
 export async function authorize(): Promise<OAuth2Client | JWT> {
@@ -249,7 +284,7 @@ export async function authorize(): Promise<OAuth2Client | JWT> {
   const client = await loadSavedCredentialsIfExist();
   if (client) {
     logger.info('Using saved credentials.');
-    return client;
+    return validateSavedCredentials(client);
   }
   logger.info('No saved token found. Starting interactive authentication flow...');
   return authenticate();

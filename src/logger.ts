@@ -67,3 +67,63 @@ export const logger = {
     }
   },
 };
+
+function serializeArgs(args: unknown[]): string {
+  return args
+    .map((arg) => {
+      if (typeof arg === 'string') return arg;
+      try {
+        return JSON.stringify(arg);
+      } catch {
+        return String(arg);
+      }
+    })
+    .join(' ');
+}
+
+const fastMcpWarningCache = new Map<string, number>();
+
+function shouldSuppressFastMcpWarning(message: string): boolean {
+  if (!message.includes('could not infer client capabilities after 10 attempts')) {
+    return false;
+  }
+
+  const now = Date.now();
+  const lastSeen = fastMcpWarningCache.get(message) ?? 0;
+  if (now - lastSeen < 60000) {
+    return true;
+  }
+
+  fastMcpWarningCache.set(message, now);
+  return false;
+}
+
+export const fastMcpLogger = {
+  debug(...args: unknown[]): void {
+    const message = serializeArgs(args);
+    if (message.includes('Stateless HTTP Stream request handled')) {
+      return;
+    }
+    logger.debug('[FastMCP]', ...args);
+  },
+
+  info(...args: unknown[]): void {
+    logger.info('[FastMCP]', ...args);
+  },
+
+  warn(...args: unknown[]): void {
+    const message = serializeArgs(args);
+    if (shouldSuppressFastMcpWarning(message)) {
+      return;
+    }
+    logger.warn('[FastMCP]', ...args);
+  },
+
+  error(...args: unknown[]): void {
+    logger.error('[FastMCP]', ...args);
+  },
+
+  log(...args: unknown[]): void {
+    logger.info('[FastMCP]', ...args);
+  },
+};

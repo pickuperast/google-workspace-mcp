@@ -77,6 +77,15 @@ export function register(server: FastMCP) {
         return JSON.stringify({ folders, files }, null, 2);
       } catch (error: any) {
         log.error(`Error listing folder contents: ${error.message || error}`);
+        const errorDescription = error?.response?.data?.error_description;
+        if (
+          error?.message === 'invalid_grant' ||
+          errorDescription === 'Token has been expired or revoked.'
+        ) {
+          throw new UserError(
+            'Google authorization has expired or been revoked. Re-run the `auth` flow to refresh the token. If you are using Docker, redeploy or sync the refreshed token into `docker-data/config/google-workspace-mcp/token.json` before retrying.'
+          );
+        }
         if (error.code === 404) throw new UserError('Folder not found. Check the folder ID.');
         if (error.code === 403)
           throw new UserError('Permission denied. Make sure you have access to this folder.');

@@ -10,7 +10,7 @@
  * Setup:
  *   1. Create a new Apps Script project at https://script.google.com
  *   2. Link the project to the SAME Google Cloud project as the OAuth client
- *      used by mcp-googledocs-server (Project Settings → Change project).
+ *      used by google-workspace-mcp (Project Settings → Change project).
  *   3. Paste this file's contents.
  *   4. Deploy → New deployment → Select type: API Executable → Deploy.
  *   5. Copy the Deployment ID into secrets.yaml under
