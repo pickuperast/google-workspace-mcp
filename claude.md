@@ -2,7 +2,7 @@
 
 Repository: https://github.com/pickuperast/google-workspace-mcp
 
-FastMCP server with 50 tools for Google Docs, Sheets, and Drive.
+FastMCP server with 88 tools for Google Docs, Sheets, Drive, Forms, and Gmail.
 
 ## Tool Categories
 
@@ -16,6 +16,8 @@ FastMCP server with 50 tools for Google Docs, Sheets, and Drive.
 | Sheets        | 8     | `readSpreadsheet`, `writeSpreadsheet`, `appendSpreadsheetRows`, `clearSpreadsheetRange`, `createSpreadsheet`, `listGoogleSheets`    |
 | Sheets Tables | 6     | `createTable`, `listTables`, `getTable`, `deleteTable`, `updateTableRange`, `appendTableRows`                                       |
 | Drive         | 13    | `listGoogleDocs`, `searchGoogleDocs`, `getDocumentInfo`, `createFolder`, `moveFile`, `copyFile`, `createDocument`                   |
+| Forms         | 8     | `createForm`, `listForms`, `getForm`, `addFormQuestion`, `setFormPublishSettings`, `listFormResponses`, `getFormResponse`           |
+| Gmail         | 17    | `listGmailLabels`, `listEmails`, `getEmail`, `createGmailDraft`, `updateGmailDraft`, `sendGmailDraft`, `sendEmail`                  |
 
 \*Not fully implemented
 
@@ -28,10 +30,12 @@ The server supports Google Shared Drives. All Drive file operations (`files.list
 - **Comment anchoring:** Programmatically created comments appear in "All Comments" but aren't visibly anchored to text in the UI
 - **Resolved status:** May not persist in Google Docs UI (Drive API limitation)
 - **fixListFormatting:** Experimental, may not work reliably
+- **Forms file uploads:** The Google Forms API does not support creating file-upload questions
 
 ## Parameter Patterns
 
 - **Document ID:** Extract from URL: `docs.google.com/document/d/DOCUMENT_ID/edit`
+- **Form ID:** Extract from URL: `docs.google.com/forms/d/FORM_ID/edit`
 - **Text targeting:** Use `textToFind` + `matchInstance` OR `startIndex`/`endIndex`
 - **Colors:** Hex format `#RRGGBB` or `#RGB`
 - **Alignment:** `START`, `END`, `CENTER`, `JUSTIFIED` (not LEFT/RIGHT)
@@ -114,6 +118,7 @@ Appends markdown content to the end of a document with full formatting.
 | `src/types.ts`                  | Zod schemas, hex color validation, style parameter definitions                                   |
 | `src/googleDocsApiHelpers.ts`   | `findTextRange`, `executeBatchUpdate`, `executeBatchUpdateWithSplitting`, style request builders |
 | `src/googleSheetsApiHelpers.ts` | A1 notation parsing, range operations                                                            |
+| `src/tools/forms/`              | Google Forms tools for create/read/update questions, publish settings, and responses             |
 | `src/markdownParser.ts`         | Markdown-it configuration, markdown parsing utilities                                            |
 | `src/markdownToGoogleDocs.ts`   | Markdown-to-Google-Docs conversion logic                                                         |
 | `src/index.ts`                  | Entry point, CLI handling, and MCP server startup                                                |
@@ -122,3 +127,7 @@ Appends markdown content to the end of a document with full formatting.
 
 - `README.md` - Setup instructions and usage examples
 - `SAMPLE_TASKS.md` - 15 example workflows
+
+## Google Forms API Setup
+
+To enable Google Forms support, visit `https://console.cloud.google.com/apis/library/forms.googleapis.com` and enable the API for the project.

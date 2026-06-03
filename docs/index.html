@@ -59,6 +59,7 @@ This server needs permission to talk to Google APIs on your behalf. You'll creat
     - In the search bar at the top, type "APIs & Services" and select "Library".
     - Search for "**Google Docs API**" and click on it. Then click the "**ENABLE**" button.
     - Search for "**Google Drive API**" and click on it. Then click the "**ENABLE**" button (this is often needed for finding files or permissions).
+    - Search for "**Google Forms API**" and click on it. Then click the "**ENABLE**" button, or visit `https://console.cloud.google.com/apis/library/forms.googleapis.com` directly.
 4.  **Configure OAuth Consent Screen:** This screen tells users (usually just you) what your app wants permission for.
     - On the left menu, click "APIs & Services" -> "**OAuth consent screen**".
     - Choose User Type: Select "**External**" and click "CREATE".
@@ -70,6 +71,8 @@ This server needs permission to talk to Google APIs on your behalf. You'll creat
     - **Scopes:** Click "**ADD OR REMOVE SCOPES**". Search for and add the following scopes:
       - `https://www.googleapis.com/auth/documents` (Allows reading/writing docs)
       - `https://www.googleapis.com/auth/drive.file` (Allows access to specific files opened/created by the app)
+      - `https://www.googleapis.com/auth/forms.body` (Allows creating and editing forms)
+      - `https://www.googleapis.com/auth/forms.responses.readonly` (Allows reading form responses)
       - Click "**UPDATE**".
     - Click "**SAVE AND CONTINUE**".
     - **Test Users:** Click "**ADD USERS**". Enter the same Google email address you are logged in with. Click "**ADD**". This allows _you_ to use the app while it's in "testing" mode.

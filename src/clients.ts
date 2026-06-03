@@ -1,5 +1,5 @@
 // src/clients.ts
-import { google, docs_v1, drive_v3, gmail_v1, sheets_v4, script_v1 } from 'googleapis';
+import { google, docs_v1, drive_v3, forms_v1, gmail_v1, sheets_v4, script_v1 } from 'googleapis';
 import { UserError } from 'fastmcp';
 import { OAuth2Client } from 'google-auth-library';
 import { authorize } from './auth.js';
@@ -9,13 +9,14 @@ let authClient: OAuth2Client | null = null;
 let googleDocs: docs_v1.Docs | null = null;
 let googleDrive: drive_v3.Drive | null = null;
 let googleSheets: sheets_v4.Sheets | null = null;
+let googleForms: forms_v1.Forms | null = null;
 let googleScript: script_v1.Script | null = null;
 let gmail: gmail_v1.Gmail | null = null;
 
 // --- Initialization ---
 export async function initializeGoogleClient() {
-  if (googleDocs && googleDrive && googleSheets)
-    return { authClient, googleDocs, googleDrive, googleSheets, googleScript, gmail };
+  if (googleDocs && googleDrive && googleSheets && googleForms)
+    return { authClient, googleDocs, googleDrive, googleSheets, googleForms, googleScript, gmail };
   if (!authClient) {
     try {
       logger.info('Attempting to authorize Google API client...');
@@ -24,6 +25,7 @@ export async function initializeGoogleClient() {
       googleDocs = google.docs({ version: 'v1', auth: authClient });
       googleDrive = google.drive({ version: 'v3', auth: authClient });
       googleSheets = google.sheets({ version: 'v4', auth: authClient });
+      googleForms = google.forms({ version: 'v1', auth: authClient });
       googleScript = google.script({ version: 'v1', auth: authClient });
       gmail = google.gmail({ version: 'v1', auth: authClient });
       logger.info('Google API client authorized successfully.');
@@ -33,6 +35,7 @@ export async function initializeGoogleClient() {
       googleDocs = null;
       googleDrive = null;
       googleSheets = null;
+      googleForms = null;
       googleScript = null;
       gmail = null;
       throw new Error('Google client initialization failed. Cannot start server tools.');
@@ -47,6 +50,9 @@ export async function initializeGoogleClient() {
   if (authClient && !googleSheets) {
     googleSheets = google.sheets({ version: 'v4', auth: authClient });
   }
+  if (authClient && !googleForms) {
+    googleForms = google.forms({ version: 'v1', auth: authClient });
+  }
   if (authClient && !googleScript) {
     googleScript = google.script({ version: 'v1', auth: authClient });
   }
@@ -54,11 +60,13 @@ export async function initializeGoogleClient() {
     gmail = google.gmail({ version: 'v1', auth: authClient });
   }
 
-  if (!googleDocs || !googleDrive || !googleSheets || !gmail) {
-    throw new Error('Google Docs, Drive, Sheets, and Gmail clients could not be initialized.');
+  if (!googleDocs || !googleDrive || !googleSheets || !googleForms || !gmail) {
+    throw new Error(
+      'Google Docs, Drive, Sheets, Forms, and Gmail clients could not be initialized.'
+    );
   }
 
-  return { authClient, googleDocs, googleDrive, googleSheets, googleScript, gmail };
+  return { authClient, googleDocs, googleDrive, googleSheets, googleForms, googleScript, gmail };
 }
 
 // --- Helper to get Docs client within tools ---
@@ -92,6 +100,17 @@ export async function getSheetsClient() {
     );
   }
   return sheets;
+}
+
+// --- Helper to get Forms client within tools ---
+export async function getFormsClient() {
+  const { googleForms: forms } = await initializeGoogleClient();
+  if (!forms) {
+    throw new UserError(
+      'Google Forms client is not initialized. Authentication might have failed during startup or lost connection.'
+    );
+  }
+  return forms;
 }
 
 // --- Helper to get Auth client for direct API usage ---

@@ -4,7 +4,7 @@ Public repository: https://github.com/pickuperast/google-workspace-mcp
 
 ![Demo Animation](assets/google.docs.mcp.1.gif)
 
-Connect Claude Desktop, Cursor, or any MCP client to your Google Docs, Google Sheets, Google Drive, and Gmail.
+Connect Claude Desktop, Cursor, or any MCP client to your Google Docs, Google Sheets, Google Drive, Google Forms, and Gmail.
 
 ---
 
@@ -14,7 +14,8 @@ Connect Claude Desktop, Cursor, or any MCP client to your Google Docs, Google Sh
 
 1. Go to the [Google Cloud Console](https://console.cloud.google.com/)
 2. Create or select a project
-3. Enable the **Google Docs API**, **Google Sheets API**, and **Google Drive API**
+3. Enable the **Google Docs API**, **Google Sheets API**, **Google Drive API**, and **Google Forms API**
+   - Forms API direct link: `https://console.cloud.google.com/apis/library/forms.googleapis.com`
 4. Configure the **OAuth consent screen** (External, add your email as a test user)
 5. Create an **OAuth client ID** (Desktop app type)
 6. Copy the **Client ID** and **Client Secret** from the confirmation screen
@@ -69,13 +70,13 @@ npx -y @pickuperast/google-workspace-mcp auth
 ```
 
 2. Put your OAuth env vars in `.env`.
-3. Deploy with:
+3. Deploy the auto-starting Docker container with:
 
 ```powershell
 .\scripts\deploy-windows.ps1
 ```
 
-This script:
+This is the script to run when you want an auto-deployable container that comes back after Windows sign-in. It:
 
 - copies the existing token into `./docker-data/config/google-workspace-mcp/token.json`
 - builds the image
@@ -92,6 +93,18 @@ The startup task runs [scripts/start-container.ps1](/G:/Documents/GitHub/google-
 ```
 
 The MCP endpoint is exposed at `http://127.0.0.1:8089/mcp` with SSE fallback at `http://127.0.0.1:8089/sse`.
+
+### Connect Codex to the Docker MCP Server
+
+After the Docker deployment is running, add this configuration to `C:\Users\{YOUR_USERNAME}\.codex\config.toml`:
+
+```toml
+[mcp_servers.google-workspace-mcp]
+transport = "http"
+url = "http://localhost:8089/mcp"
+```
+
+Codex will then connect to the already-running Docker container over HTTP. The container must be started with `.\scripts\deploy-windows.ps1` first, or later restarted with `.\scripts\start-container.ps1` if Docker Desktop was not running.
 
 The container reads credentials from `.env` through `docker-compose.yml`:
 
@@ -188,17 +201,30 @@ That means the caller does not need to pass `GOOGLE_CLIENT_ID` or `GOOGLE_CLIENT
 | `renameFile`         | Rename a file                               |
 | `deleteFile`         | Move to trash or permanently delete         |
 
+### Google Forms
+
+| Tool                     | Description                                                     |
+| ------------------------ | --------------------------------------------------------------- |
+| `createForm`             | Create a form, optionally move it to a folder and add questions |
+| `listForms`              | List Google Forms in Drive                                      |
+| `getForm`                | Get form metadata, settings, publish state, and questions       |
+| `updateFormInfo`         | Update the respondent-facing title and description              |
+| `addFormQuestion`        | Add common question types                                       |
+| `setFormPublishSettings` | Publish/unpublish and control response acceptance               |
+| `listFormResponses`      | List submitted responses                                        |
+| `getFormResponse`        | Get a single submitted response                                 |
+
 ### Gmail
 
-| Tool               | Description                                                  |
-| ------------------ | ------------------------------------------------------------ |
-| `listGmailLabels`  | List system and custom Gmail labels                          |
-| `listEmails`       | Search/list Gmail messages with metadata and snippets        |
-| `getEmail`         | Read a Gmail message with headers, bodies, and attachments   |
-| `createGmailDraft` | Create a Gmail draft, optionally in an existing thread       |
-| `updateGmailDraft` | Replace the contents of an existing Gmail draft by ID        |
-| `sendGmailDraft`   | Send an existing Gmail draft by ID                           |
-| `sendEmail`        | Send a Gmail message, optionally in an existing thread       |
+| Tool               | Description                                                |
+| ------------------ | ---------------------------------------------------------- |
+| `listGmailLabels`  | List system and custom Gmail labels                        |
+| `listEmails`       | Search/list Gmail messages with metadata and snippets      |
+| `getEmail`         | Read a Gmail message with headers, bodies, and attachments |
+| `createGmailDraft` | Create a Gmail draft, optionally in an existing thread     |
+| `updateGmailDraft` | Replace the contents of an existing Gmail draft by ID      |
+| `sendGmailDraft`   | Send an existing Gmail draft by ID                         |
+| `sendEmail`        | Send a Gmail message, optionally in an existing thread     |
 
 ---
 
@@ -232,6 +258,14 @@ That means the caller does not need to pass `GOOGLE_CLIENT_ID` or `GOOGLE_CLIENT
 "List my 10 most recent Google Docs"
 "Search for documents containing 'project proposal'"
 "Create a folder called 'Meeting Notes' and move document ABC123 into it"
+```
+
+### Google Forms
+
+```
+"Create a form titled 'Event RSVP' with name, email, and attendance questions"
+"Add a required dropdown question to form FORM123 with options Basic, Pro, Enterprise"
+"List responses submitted to form FORM123 after 2026-01-01"
 ```
 
 ### Markdown Workflow
@@ -329,6 +363,7 @@ Without `GOOGLE_MCP_PROFILE`, behavior is unchanged.
 - **Converted documents:** Docs converted from Word may not support all API operations.
 - **Markdown tables/images:** Not yet supported in the markdown-to-Docs conversion.
 - **Deeply nested lists:** Lists with 3+ nesting levels may have formatting quirks.
+- **Forms file uploads:** The Google Forms API does not support creating file-upload questions.
 
 ## Troubleshooting
 
@@ -336,7 +371,8 @@ Without `GOOGLE_MCP_PROFILE`, behavior is unchanged.
   - Verify `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are set in the `env` block of your MCP config.
   - Try running manually: `npx @pickuperast/google-workspace-mcp` and check stderr for errors.
 - **Authorization errors:**
-  - Ensure Docs, Sheets, and Drive APIs are enabled in Google Cloud Console.
+  - Ensure Docs, Sheets, Drive, and Forms APIs are enabled in Google Cloud Console.
+  - To enable Forms directly, visit `https://console.cloud.google.com/apis/library/forms.googleapis.com` and enable it for the project.
   - Confirm your email is listed as a Test User on the OAuth consent screen.
   - Re-authorize: `npx @pickuperast/google-workspace-mcp auth`
   - Delete `~/.config/google-workspace-mcp/token.json` and re-authorize if upgrading.
@@ -356,13 +392,14 @@ Without `GOOGLE_MCP_PROFILE`, behavior is unchanged.
 2. **Create or Select a Project:** Click the project dropdown > "NEW PROJECT". Name it (e.g., "MCP Docs Server") and click "CREATE".
 3. **Enable APIs:**
    - Navigate to "APIs & Services" > "Library"
-   - Search for and enable: **Google Docs API**, **Google Sheets API**, **Google Drive API**
+   - Search for and enable: **Google Docs API**, **Google Sheets API**, **Google Drive API**, **Google Forms API**
+   - Direct Forms API page: `https://console.cloud.google.com/apis/library/forms.googleapis.com`
 4. **Configure OAuth Consent Screen:**
    - Go to "APIs & Services" > "OAuth consent screen"
    - Choose "External" and click "CREATE"
    - Fill in: App name, User support email, Developer contact email
    - Click "SAVE AND CONTINUE"
-   - Add scopes: `documents`, `spreadsheets`, `drive`
+   - Add scopes: `documents`, `spreadsheets`, `drive`, `forms.body`, `forms.responses.readonly`
    - Click "SAVE AND CONTINUE"
    - Add your Google email as a Test User
    - Click "SAVE AND CONTINUE"
